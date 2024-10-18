@@ -2,9 +2,6 @@ import json
 import csv
 
 
-fichier = "employes_data.json"
-
-
 # 1 - importer le fichier json et récupérer les données
 # fonction d'importation du fichier json
 
@@ -22,10 +19,11 @@ def importation_json(chemin:str) -> dict :
     with open(chemin) as file : 
         return json.load(file)
 
+##########################################################################
 
 ## 2 - récupérer les différentes filiales de notre jeu de données
 
-def departements(donnees:dict) -> list :
+def list_filiales(donnees:dict) -> list :
     
     """
     prend en entrée un dictionaire contenant des paires clé : valeur où la clé représente le nom du département, et les valeurs la liste des employés 
@@ -38,6 +36,7 @@ def departements(donnees:dict) -> list :
     """
     return list(donnees.keys())
 
+##########################################################################
 
 ## 3 - Ajouter à chaque employé la clé valeur "salaire_mensuel : valeur"
 
@@ -51,7 +50,7 @@ Si l'absence est justifiée (maladie, congé autorisé, etc.), il peut y avoir d
 
 """
 
-def add_salaire_mensuel_filiale(salaries : list) -> list: 
+def add_salaire_mensuel_filiale(salaries : list[dict]) -> list[dict[str | int]]: 
     
     """
     Fonction qui prend en entrès une liste de dictionnaires, ou chaque dictionnaire contiens les données de chaque salarié 
@@ -83,17 +82,18 @@ def add_salaire_mensuel_filiale(salaries : list) -> list:
     
     return salaries
 
+##########################################################################
 
 # on ajoute le salaire mensuel à tous les salariés en bouclant sur toutes les filières
 
 def salaire_mensuel_tout(donnees : dict, depts : list) -> dict : 
     
     """
-    cette fonction permet de calculer tous les salaires mensuels de tous les employes
+    cette fonction permet de calculer tous les salaires mensuels de tous les employes des différentes filiales
 
     Args:
         donnees (dict): ici on doit utiliser les données qu'on a importé avec la fonction importation_json()
-        depts (list): liste des filiales qu'on récupére avec la méthode departements()
+        depts (list): liste des filiales qu'on récupére avec la méthode list_filiales()
 
     Returns:
         dict: retourne les données avec une nouvelle paire clé : valeur correspondant au salaire mensuel pour chaque salarié
@@ -104,8 +104,7 @@ def salaire_mensuel_tout(donnees : dict, depts : list) -> dict :
         
     return donnees
 
-# donnees_avec_salaires_mensuels = salaire_mensuel_tout()
-
+##########################################################################
 
 ## 4 - calcul des statistiques d'une filiale : 
 
@@ -127,9 +126,7 @@ def stats_filiale(all_salaires : dict, filiale : str) -> tuple :
     
     donnees_filiale = all_salaires[filiale]
     
-    salaires = []
-    for salarie in donnees_filiale : 
-        salaires.append(salarie["salaire_mensuel"])
+    salaires = [salarie["salaire_mensuel"] for salarie in donnees_filiale]
     
     salaire_moyen = round(sum(salaires) / len(salaires),2)
     salaire_max = round(max(salaires),2)
@@ -137,11 +134,9 @@ def stats_filiale(all_salaires : dict, filiale : str) -> tuple :
     
     return salaire_moyen, salaire_max, salaire_min
 
-# stats_filiale("TechCorp")
-
+##########################################################################
 
 ## 5 - calcul des statistiques globales : 
-
 
 def stats_globales(all_salaires : dict ,filiales : list) : 
     
@@ -150,9 +145,7 @@ def stats_globales(all_salaires : dict ,filiales : list) :
     
     Args:
         all_salaires (dict): toutes les données de notre jeu de données, contenant la nouvelle clé valeur "salaire_mensuel", qu'on récupére avec la fonction salaire_mensuel_tout()
-        filiales (list): liste de toutes les filiales, on les récupére avec la méthode departements()
-
-
+        filiales (list): liste de toutes les filiales, on les récupére avec la méthode list_filiales()
 
     Returns:
         moyen_global : salaire moyen dans toute l'entreprise
@@ -161,53 +154,60 @@ def stats_globales(all_salaires : dict ,filiales : list) :
     """
     
     data = all_salaires
-    filiales = departements(data)
+    filiales = list_filiales(data)
     
-    salaires_moyens = []
-    salaires_max = []
-    salaires_min = []
-    
-    for dep in filiales : 
-        salaires_moyens.append(stats_filiale(all_salaires, dep)[0])
-        salaires_max.append(stats_filiale(all_salaires, dep)[1])
-        salaires_min.append(stats_filiale(all_salaires, dep)[2])
-        
-    moyen_global = round(sum(salaires_moyens) / len(salaires_moyens),2)
-    maximal_global = round(max(salaires_max),2)
-    minimal_global = round(min(salaires_max),2)
+    moyen_global = round(sum([stats_filiale(all_salaires, dep)[0] for dep in filiales]) / len([stats_filiale(all_salaires, dep)[0] for dep in filiales]), 2)
+    maximal_global = max([stats_filiale(all_salaires, dep)[1] for dep in filiales])
+    minimal_global = min([stats_filiale(all_salaires, dep)[2] for dep in filiales])
     
     return moyen_global, maximal_global, minimal_global
 
 # stats_globales()
 
+##########################################################################
 
 ## 6 - Affichage des résultats :
+
+def afficher_resultats_filiale(all_salaires : dict, filiale : str) : 
+    
+    """
+    fonction qui permet d'afficher les résultats d'une seule filiale dans la console
+    
+    Args:
+        all_salaires (dict): toutes les données de notre jeu de données, contenant la nouvelle clé valeur "salaire_mensuel", qu'on récupére avec la fonction salaire_mensuel_tout()
+        filiale : nom de la filiale pour laquelle on veut visualiser les données
+    
+    """
+    
+    print (f"Entreprise : {filiale} \n")
+    
+    for salarie in all_salaires[filiale] :
+        print(f"{salarie["name"]:10} |  {salarie["job"]:20} |  Salaire mensuel : {salarie["salaire_mensuel"]:.2f} €")
+    
+    print("\n================================================================\n")
+    print(f"Statistiques des salariès pour la filiale {filiale}")
+    print(f"Salaire moyen : {stats_filiale(all_salaires, filiale)[0]:.2f} €")
+    print(f"Salaire le plus élevé : {stats_filiale(all_salaires, filiale)[1]:.2f} €")
+    print(f"Salaire le plus bas : {stats_filiale(all_salaires, filiale)[2]:.2f} €\n")
+    print("================================================================\n")
+
+    
+##########################################################################
 
 def afficher_resultats(all_salaires : dict, filiales : list) : 
 
     """
-    fonction qui permet d'afficher les résultats dans la console
+    fonction qui permet d'afficher tous les résultats de toutes les filiales et toutes les stats dans la console
     
     Args:
         all_salaires (dict): toutes les données de notre jeu de données, contenant la nouvelle clé valeur "salaire_mensuel", qu'on récupére avec la fonction salaire_mensuel_tout()
-        filiales : liste des filiales du jeu de données, récupéres avec la méthode departements()
+        filiales : liste des filiales du jeu de données, récupéres avec la méthode list_filiales()
     
     """
     
-    for fil_key, fil_values in all_salaires.items() : 
-        print (f"Entreprise : {fil_key} \n")
-        # print(f"Nom \t   |  Job  Salaire mensuel")
-        
-        for salarie in fil_values :
-            print(f"{salarie["name"]:10} |  {salarie["job"]:20} |  Salaire mensuel : {salarie["salaire_mensuel"]:.2f} €")
-            # print(f"{salarie["name"]} \t\t | {salarie["job"]} \t\t | Salaire mensuel : {salarie["salaire_mensuel"]} ")
-        
-        print("\n================================================================\n")
-        print(f"Statistiques des salariès pour la filiale {fil_key}")
-        print(f"Salaire moyen : {stats_filiale(all_salaires, fil_key)[0]:.2f} €")
-        print(f"Salaire le plus élevé : {stats_filiale(all_salaires, fil_key)[1]:.2f} €")
-        print(f"Salaire le plus bas : {stats_filiale(all_salaires, fil_key)[2]:.2f} €\n")
-        print("================================================================\n")
+    for filiale in list_filiales(all_salaires) : 
+        afficher_resultats_filiale(all_salaires, filiale)
+
     print(f"Statistiques globales pour l'ensemble l'entreprise")
     print(f"Salaire moyen : {stats_globales(all_salaires, filiales)[0]:.2f} €")
     print(f"Salaire le plus élevé : {stats_globales(all_salaires, filiales)[1]:.2f} €")
@@ -215,8 +215,7 @@ def afficher_resultats(all_salaires : dict, filiales : list) :
     print("================================================================\n================================================================\n")
         
 
-# ----------------------------------------------------------------------------------------
-# ----------------------------------------------------------------------------------------
+##########################################################################
 
 # fonction de sauvegarde des salaires en CSV : 
 
@@ -227,7 +226,7 @@ def save_salaires_to_csv(data:dict, filiales:list, salaires_file_name:str) -> st
 
     Args:
         data (dict): toutes les données de notre jeu de données, contenant la nouvelle clé valeur "salaire_mensuel", qu'on récupére avec la fonction 
-        filiales (list): liste de toutes les filiales, on les récupére avec la méthode departements()
+        filiales (list): liste de toutes les filiales, on les récupére avec la méthode list_filiales()
         salaires_file_name (str): nom qu'on veut donner au fichier CSV dans lequel on stocke les salaires
     
     Returns:
@@ -248,6 +247,8 @@ def save_salaires_to_csv(data:dict, filiales:list, salaires_file_name:str) -> st
     
     return salaires_file_name
 
+
+##########################################################################
     
 # fonction de sauvegarde des stats en CSV : 
 
@@ -258,7 +259,7 @@ def save_stats_to_csv(all_salaires : dict, filiales : list, stats_file_name : st
 
     Args:
         all_salaires (dict): toutes les données de notre jeu de données, contenant la nouvelle clé valeur "salaire_mensuel", qu'on récupére avec la fonction 
-        filiales (list): liste de toutes les filiales, on les récupére avec la méthode departements()
+        filiales (list): liste de toutes les filiales, on les récupére avec la méthode list_filiales()
         stats_file_name (str): nom qu'on veut donner au fichier CSV dans lequel on stocke les statistiques
     
     Returns:
