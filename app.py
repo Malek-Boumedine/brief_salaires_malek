@@ -14,6 +14,14 @@ import json
     - bouton quitter        OK
 """
 
+def save_salaires_csv() : 
+    func_calc.save_salaires_to_csv(all_salaires, filiales, "export/employes_data_salaires.csv")
+    
+def save_stats_csv() : 
+    func_calc.save_stats_to_csv(all_salaires, filiales, "export/stats.csv")
+
+    
+
 fichier = "employes_data.json"
 donnees = func_calc.importation_json(fichier)
 filiales = func_calc.departements(donnees)
@@ -70,18 +78,18 @@ liste_filiales.grid(row=3, column=0, pady=5, padx=10)
 
 #
 mafiliale = ["TechCorp"]
-filtrer = tk.Button(fenetre,text="Filtrer", command=lambda: afficher_filiale_terminal(mafiliale), width=button_width, height=button_height)
+filtrer = tk.Button(fenetre,text="Filtrer", command=afficher_filiale_terminal(mafiliale), width=button_width, height=button_height)
 filtrer.grid(row=4, column=0, pady=5, padx=10)
 
-#
-export_salaires = tk.Button(fenetre, text="Exporter les salaires en CSV", command=func_calc.save_salaires_to_csv(all_salaires, filiales, "export/employes_data_salaires.csv"), width=button_width, height=button_height)
+# OK
+export_salaires = tk.Button(fenetre, text="Exporter les salaires en CSV", command=save_salaires_csv, width=button_width, height=button_height)
 export_salaires.grid(row=5, column=0, pady=5, padx=10)
 
-#
-export_stats = tk.Button(fenetre, text="Exporter les statistiques en CSV", command=func_calc.save_stats_to_csv(all_salaires, filiales, "export/stats.csv"), width=button_width, height=button_height)
+# OK
+export_stats = tk.Button(fenetre, text="Exporter les statistiques en CSV", command=save_stats_csv, width=button_width, height=button_height)
 export_stats.grid(row=6, column=0, pady=5, padx=10)
 
-#
+# OK
 quitter = tk.Button(fenetre, text="Quitter", command=quit, width=button_width, height=button_height)
 quitter.grid(row=7, column=0, pady=5, padx=10)
 
