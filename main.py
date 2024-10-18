@@ -1,6 +1,6 @@
 import func_calc
 
-fichier = "employes_data.json"
+fichier = "employes_data_test.json"
 
 
 donnees = func_calc.importation_json(fichier)
@@ -14,7 +14,7 @@ func_calc.save_salaires_to_csv(donnees, filiales, "export/employes_data_salaires
 func_calc.save_stats_to_csv(donnees, filiales, "export/stats.csv")
 
 # afficher les résultats
-# func_calc.afficher_resultats(all_salaires, filiales)
+func_calc.afficher_resultats(all_salaires, filiales)
 
 
 
